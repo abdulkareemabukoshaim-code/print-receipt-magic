@@ -84,48 +84,51 @@ export const Receipt: React.FC<ReceiptProps> = ({ data, options }) => {
       grocery: "🛒 FRESH GROCERIES",
       gas: "⛽ FUEL & CONVENIENCE",
       coffee: "☕ ARTISAN COFFEE",
-      tech: "📱 ELECTRONICS & TECH",
-      restaurant: "🍽️ FINE DINING",
+      tech: "⚡ ELECTRONICS & TECH",
+      restaurant: "🍽️ RESTAURANT & DINING",
+      retail: "🛍️ RETAIL STORE",
+      corporate: "🏢 CORPORATE",
+      thermal: "📄 THERMAL RECEIPT",
+      modern: "✨ MODERN RECEIPT"
     };
 
-    return (
-      <div className={getHeaderStyle()}>
-        <div className="text-lg font-black">{data.storeName}</div>
-        {brandMap[data.style] && (
-          <div className="text-xs mt-1">{brandMap[data.style]}</div>
-        )}
-      </div>
-    );
+    return brandMap[data.style] || "🏪 STORE";
   };
 
   return (
     <div className={getReceiptStyle()}>
-      {getBrandHeader()}
-      
-      {/* Store Information */}
+      {/* Header */}
+      {options.includeLogo && (
+        <div className={getHeaderStyle()}>
+          <div className="text-xs text-muted-foreground mb-1">{getBrandHeader()}</div>
+          <div className="text-sm font-bold">{data.storeName || 'Store Name'}</div>
+        </div>
+      )}
+
+      {/* Store Info */}
       <div className="text-center mb-3">
-        {!options.includeLogo && data.storeName && (
-          <div className="font-bold text-sm mb-1">{data.storeName}</div>
-        )}
-        {data.storeAddress && <div className="text-xs">{data.storeAddress}</div>}
-        {options.includeContact && (
-          <>
-            {data.storePhone && <div className="text-xs">{data.storePhone}</div>}
-            {data.storeEmail && <div className="text-xs">{data.storeEmail}</div>}
-          </>
-        )}
+        {!options.includeLogo && <div className="font-bold text-sm mb-1">{data.storeName || 'Store Name'}</div>}
+        <div className="text-xs leading-relaxed">
+          {data.storeAddress && <div>{data.storeAddress}</div>}
+          {options.includeContact && (
+            <>
+              {data.storePhone && <div>{data.storePhone}</div>}
+              {data.storeEmail && <div>{data.storeEmail}</div>}
+            </>
+          )}
+        </div>
       </div>
 
       <Separator className="my-2" />
 
-      {/* Transaction Details */}
-      <div className="mb-3 space-y-1">
+      {/* Transaction Info */}
+      <div className="text-xs mb-3 space-y-1">
         <div className="flex justify-between">
           <span>Date:</span>
           <span>{data.date}</span>
         </div>
         <div className="flex justify-between">
-          <span>Transaction ID:</span>
+          <span>Transaction:</span>
           <span>{data.transactionId}</span>
         </div>
         {data.cashier && (
@@ -141,16 +144,11 @@ export const Receipt: React.FC<ReceiptProps> = ({ data, options }) => {
       {/* Items */}
       {data.items.length > 0 && (
         <>
-          <div className="mb-3">
+          <div className="space-y-1 mb-3">
             {data.items.map((item, index) => (
-              <div key={index} className="flex justify-between items-start py-1">
-                <div className="flex-1 pr-2">
-                  <div className="font-medium">{item.name}</div>
-                  {item.quantity > 1 && (
-                    <div className="text-xs text-gray-600">Qty: {item.quantity}</div>
-                  )}
-                </div>
-                <div className="font-mono">${item.price}</div>
+              <div key={index} className="flex justify-between text-xs">
+                <span className="flex-1 truncate pr-2">{item.name}</span>
+                <span className="whitespace-nowrap">${item.price}</span>
               </div>
             ))}
           </div>
@@ -159,58 +157,70 @@ export const Receipt: React.FC<ReceiptProps> = ({ data, options }) => {
       )}
 
       {/* Totals */}
-      <div className="mb-3 space-y-1">
+      <div className="space-y-1 text-xs">
         {data.subtotal && (
           <div className="flex justify-between">
             <span>Subtotal:</span>
-            <span className="font-mono">${data.subtotal}</span>
+            <span>${data.subtotal}</span>
           </div>
         )}
         {data.tax && (
           <div className="flex justify-between">
             <span>Tax:</span>
-            <span className="font-mono">${data.tax}</span>
+            <span>${data.tax}</span>
           </div>
         )}
         <div className="flex justify-between font-bold text-sm border-t pt-1">
-          <span>TOTAL:</span>
-          <span className="font-mono">${data.total || '0.00'}</span>
+          <span>Total:</span>
+          <span>${data.total || '0.00'}</span>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between text-xs">
           <span>Payment:</span>
           <span>{data.paymentMethod}</span>
         </div>
       </div>
 
-      <Separator className="my-2" />
-
-      {/* Footer Message */}
+      {/* Footer */}
       {data.footerMessage && (
-        <div className="text-center mb-3 text-xs">
-          {data.footerMessage}
-        </div>
+        <>
+          <Separator className="my-3" />
+          <div className="text-center text-xs font-medium">
+            {data.footerMessage}
+          </div>
+        </>
       )}
 
-      {/* Terms & Conditions */}
+      {/* Terms */}
       {options.includeTerms && data.terms && (
-        <div className="text-xs text-gray-600 mb-3 border-t pt-2">
-          <div className="font-semibold mb-1">Terms & Conditions:</div>
-          <div>{data.terms}</div>
-        </div>
+        <>
+          <Separator className="my-2" />
+          <div className="text-xs text-muted-foreground">
+            <div className="font-medium mb-1">Terms & Conditions:</div>
+            <div className="leading-relaxed">{data.terms}</div>
+          </div>
+        </>
       )}
 
       {/* QR Code */}
       {options.includeQR && (
-        <div className="text-center mt-3">
-          <div ref={qrRef} className="inline-block" />
-          <div className="text-xs mt-1 text-gray-600">Scan for details</div>
-        </div>
+        <>
+          <Separator className="my-3" />
+          <div className="flex justify-center">
+            <div ref={qrRef} className="text-center" />
+          </div>
+        </>
       )}
 
-      {/* Style-specific footer */}
+      {/* Design-specific footer elements */}
       {data.style === 'thermal' && (
-        <div className="text-center text-xs mt-3 border-t pt-2 border-dashed">
-          ** CUSTOMER COPY **
+        <div className="text-center text-xs mt-3 border-t border-dashed pt-2">
+          - THERMAL RECEIPT -
+        </div>
+      )}
+      
+      {data.style === 'corporate' && (
+        <div className="text-center text-xs mt-3 border-t-2 border-gray-800 pt-2 font-bold">
+          CORPORATE RECEIPT
         </div>
       )}
     </div>
