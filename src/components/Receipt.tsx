@@ -13,9 +13,28 @@ export const Receipt: React.FC<ReceiptProps> = ({ data, options }) => {
 
   useEffect(() => {
     if (options.includeQR && qrRef.current) {
-      const qrText = `${data.storeName}\n${data.storeAddress}\n${data.date}\nTransaction: ${data.transactionId}\nTotal: $${data.total}`;
+      // Create comprehensive receipt data for QR code
+      const receiptInfo = {
+        storeName: data.storeName,
+        storeAddress: data.storeAddress,
+        storePhone: data.storePhone,
+        storeEmail: data.storeEmail,
+        date: data.date,
+        transactionId: data.transactionId,
+        cashier: data.cashier,
+        paymentMethod: data.paymentMethod,
+        items: data.items,
+        subtotal: data.subtotal,
+        tax: data.tax,
+        total: data.total,
+        footerMessage: data.footerMessage,
+        terms: data.terms,
+        style: data.style
+      };
       
-      QRCode.toCanvas(qrText, { width: 80, margin: 1 })
+      const qrText = JSON.stringify(receiptInfo);
+      
+      QRCode.toCanvas(qrText, { width: 120, margin: 1 })
         .then((canvas) => {
           if (qrRef.current) {
             qrRef.current.innerHTML = '';
