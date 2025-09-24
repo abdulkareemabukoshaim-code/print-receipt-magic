@@ -114,7 +114,8 @@
   
   /* Receipt-specific styles */
   .receipt-paper {
-    background: var(--gradient-receipt);
+    background: hsl(var(--card));
+    color: hsl(var(--card-foreground));
     box-shadow: var(--shadow-receipt);
   }
   

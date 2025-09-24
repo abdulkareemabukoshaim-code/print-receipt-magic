@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import QRCode from 'qrcode';
 import { ReceiptData, ReceiptOptions } from '../types/receipt';
 import { Separator } from '@/components/ui/separator';
-
+import { Button } from '@/components/ui/button';
 interface ReceiptProps {
   data: ReceiptData;
   options: ReceiptOptions;
@@ -26,6 +26,7 @@ export const Receipt: React.FC<ReceiptProps> = ({ data, options }) => {
         items: data.items,
         subtotal: data.subtotal,
         tax: data.tax,
+        vat: data.tax,
         total: data.total,
         footerMessage: data.footerMessage,
         terms: data.terms,
@@ -34,7 +35,7 @@ export const Receipt: React.FC<ReceiptProps> = ({ data, options }) => {
       
       const qrText = JSON.stringify(receiptInfo);
       
-      QRCode.toCanvas(qrText, { width: 120, margin: 1 })
+      QRCode.toCanvas(qrText, { width: 256, margin: 2, errorCorrectionLevel: 'M' })
         .then((canvas) => {
           if (qrRef.current) {
             qrRef.current.innerHTML = '';
@@ -224,8 +225,26 @@ export const Receipt: React.FC<ReceiptProps> = ({ data, options }) => {
       {options.includeQR && (
         <>
           <Separator className="my-3" />
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center gap-2">
             <div ref={qrRef} className="text-center" />
+            <Button
+              variant="secondary"
+              size="sm"
+              className="no-print"
+              onClick={() => {
+                const container = qrRef.current;
+                const canvas = container?.querySelector('canvas');
+                if (canvas) {
+                  const link = document.createElement('a');
+                  link.href = canvas.toDataURL('image/png');
+                  link.download = `receipt-qr-${data.transactionId || 'receipt'}.png`;
+                  link.click();
+                }
+              }}
+              aria-label="Download QR code"
+            >
+              Download QR
+            </Button>
           </div>
         </>
       )}
