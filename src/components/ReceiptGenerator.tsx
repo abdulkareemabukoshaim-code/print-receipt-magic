@@ -53,6 +53,7 @@ export const ReceiptGenerator: React.FC = () => {
   });
 
   const [itemInput, setItemInput] = useState('');
+  const [discordWebhook, setDiscordWebhook] = useState('');
 
   const updateField = (field: keyof ReceiptData, value: string) => {
     setReceiptData(prev => ({ ...prev, [field]: value }));
@@ -131,6 +132,71 @@ export const ReceiptGenerator: React.FC = () => {
           variant: "destructive",
         });
       }
+    }
+  };
+
+  const handleSendToDiscord = async () => {
+    if (!discordWebhook) {
+      toast({
+        title: "Error",
+        description: "Please enter Discord webhook URL",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const receiptDetails = {
+        content: "📧 **New Receipt Generated**",
+        embeds: [{
+          title: `Receipt from ${receiptData.storeName || 'Store'}`,
+          color: 0x5865F2,
+          fields: [
+            { name: "🏪 Store Name", value: receiptData.storeName || 'N/A', inline: true },
+            { name: "📍 Address", value: receiptData.storeAddress || 'N/A', inline: true },
+            { name: "📞 Phone", value: receiptData.storePhone || 'N/A', inline: true },
+            { name: "📧 Email", value: receiptData.storeEmail || 'N/A', inline: true },
+            { name: "📅 Date", value: receiptData.date, inline: true },
+            { name: "🆔 Transaction ID", value: receiptData.transactionId, inline: true },
+            { name: "👤 Cashier", value: receiptData.cashier || 'N/A', inline: true },
+            { name: "💳 Payment Method", value: receiptData.paymentMethod, inline: true },
+            { name: "📋 Items", value: receiptData.items.length > 0 ? receiptData.items.map(item => `${item.name}: $${item.price}`).join('\n') : 'No items', inline: false },
+            { name: "💰 Subtotal", value: `$${receiptData.subtotal || '0.00'}`, inline: true },
+            { name: "🧾 Tax", value: `$${receiptData.tax || '0.00'}`, inline: true },
+            { name: "💵 Total", value: `$${receiptData.total || '0.00'}`, inline: true },
+            { name: "💬 Footer Message", value: receiptData.footerMessage || 'N/A', inline: false },
+            { name: "📜 Terms & Conditions", value: receiptData.terms || 'N/A', inline: false },
+            { name: "🎨 Receipt Style", value: receiptData.style, inline: true }
+          ],
+          timestamp: new Date().toISOString(),
+          footer: {
+            text: "Receipt Generator Pro"
+          }
+        }]
+      };
+
+      const response = await fetch(discordWebhook, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(receiptDetails),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Receipt sent to Discord successfully",
+        });
+      } else {
+        throw new Error('Failed to send to Discord');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send receipt to Discord",
+        variant: "destructive",
+      });
     }
   };
 
@@ -389,6 +455,21 @@ export const ReceiptGenerator: React.FC = () => {
                 )}
               </div>
 
+              {/* Discord Integration */}
+              <div className="space-y-4">
+                <Label className="text-sm font-medium">Discord Integration</Label>
+                <div>
+                  <Label htmlFor="discordWebhook">Discord Webhook URL</Label>
+                  <Input
+                    id="discordWebhook"
+                    value={discordWebhook}
+                    onChange={(e) => setDiscordWebhook(e.target.value)}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    type="url"
+                  />
+                </div>
+              </div>
+
               {/* Action Buttons */}
               <div className="flex gap-2 pt-4">
                 <Button onClick={handlePrint} className="flex-1" variant="default">
@@ -398,6 +479,9 @@ export const ReceiptGenerator: React.FC = () => {
                 <Button onClick={handleDownloadPDF} className="flex-1" variant="secondary">
                   <Download className="h-4 w-4 mr-2" />
                   Download PDF
+                </Button>
+                <Button onClick={handleSendToDiscord} className="flex-1" variant="outline">
+                  💬 Send to Discord
                 </Button>
               </div>
             </CardContent>
