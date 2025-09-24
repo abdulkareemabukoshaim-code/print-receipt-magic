@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Receipt } from './Receipt';
 import { ReceiptData, ReceiptStyle } from '../types/receipt';
-import { Printer, Download, FileText } from 'lucide-react';
+import { Printer, Download, FileText, QrCode } from 'lucide-react';
 import { generatePDF } from '../utils/pdf-generator';
 import { toast } from '@/hooks/use-toast';
 
@@ -131,6 +131,28 @@ export const ReceiptGenerator: React.FC = () => {
           variant: "destructive",
         });
       }
+    }
+  };
+
+  const handleDownloadQR = () => {
+    const qrContainer = receiptRef.current?.querySelector('[data-qr-container]');
+    const canvas = qrContainer?.querySelector('canvas');
+    if (canvas) {
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = `qr-code-${receiptData.transactionId}.png`;
+      link.click();
+      
+      toast({
+        title: "QR Code Downloaded",
+        description: "QR code saved as PNG",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "QR code not found. Make sure QR code is enabled.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -399,6 +421,10 @@ export const ReceiptGenerator: React.FC = () => {
                 <Button onClick={handleDownloadPDF} className="flex-1" variant="secondary">
                   <Download className="h-4 w-4 mr-2" />
                   Download PDF
+                </Button>
+                <Button onClick={handleDownloadQR} className="flex-1" variant="outline">
+                  <QrCode className="h-4 w-4 mr-2" />
+                  Download QR
                 </Button>
               </div>
             </CardContent>

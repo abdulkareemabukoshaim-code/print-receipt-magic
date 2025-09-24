@@ -225,26 +225,8 @@ export const Receipt: React.FC<ReceiptProps> = ({ data, options }) => {
       {options.includeQR && (
         <>
           <Separator className="my-3" />
-          <div className="flex flex-col items-center gap-2">
-            <div ref={qrRef} className="text-center" />
-            <Button
-              variant="secondary"
-              size="sm"
-              className="no-print"
-              onClick={() => {
-                const container = qrRef.current;
-                const canvas = container?.querySelector('canvas');
-                if (canvas) {
-                  const link = document.createElement('a');
-                  link.href = canvas.toDataURL('image/png');
-                  link.download = `receipt-qr-${data.transactionId || 'receipt'}.png`;
-                  link.click();
-                }
-              }}
-              aria-label="Download QR code"
-            >
-              Download QR
-            </Button>
+          <div className="flex justify-center">
+            <div ref={qrRef} className="text-center" data-qr-container />
           </div>
         </>
       )}
